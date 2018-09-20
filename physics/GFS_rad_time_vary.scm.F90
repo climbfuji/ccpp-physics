@@ -98,6 +98,22 @@
           endif
         endif
 
+        if (Model%num_p3d == 6) then ! hli mod 09/06/2017
+          if (Model%kdt == 1) then
+            print*,'hli GFS_rad_time_vary'
+            do nb = 1,nblks
+              Data(nb)%Tbd%phy_f3d(:,:,1) = Data(nb)%Statein%tgrs
+              Data(nb)%Tbd%phy_f3d(:,:,2) = max(qmin,Data(nb)%Statein%qgrs(:,:,1))
+              Data(nb)%Tbd%phy_f3d(:,:,3) = Data(nb)%Statein%tgrs
+              Data(nb)%Tbd%phy_f3d(:,:,4) = max(qmin,Data(nb)%Statein%qgrs(:,:,1))
+              Data(nb)%Tbd%phy_f3d(:,:,5) = Data(nb)%Statein%tgrs                 ! for GF
+              Data(nb)%Tbd%phy_f3d(:,:,6) = max(qmin,Data(nb)%Statein%qgrs(:,:,1))! for GF
+              Data(nb)%Tbd%phy_f2d(:,1)   = Data(nb)%Statein%prsi(:,1)
+              Data(nb)%Tbd%phy_f2d(:,2)   = Data(nb)%Statein%prsi(:,1)
+            enddo
+          endif
+        endif
+
       endif
 
   end subroutine GFS_rad_time_vary_run
