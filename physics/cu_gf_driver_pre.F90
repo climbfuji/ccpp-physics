@@ -18,8 +18,8 @@
 !! | Statein        | FV3-GFS_Statein_type                                   | Fortran DDT containing FV3-GFS prognostic state in from dycore           | DDT           |    0 | GFS_statein_type  |           | in     | F        |
 !! | Grid           | FV3-GFS_Grid_type                                      | Fortran DDT containing FV3-GFS grid and interpolation related data       | DDT           |    0 | GFS_grid_type     |           | in     | F        |
 !! | Tbd            | FV3-GFS_Tbd_type                                       | Fortran DDT containing FV3-GFS miscellaneous data                        | DDT           |    0 | GFS_tbd_type      |           | inout  | F        |
-!! | errmsg         | error_message                                          | error message for error handling in CCPP                                 | none          |    0 | character         | len=*     | out    | F        |
-!! | errflg         | error_flag                                             | error flag for error handling in CCPP                                    | flag          |    0 | integer           |           | out    | F        |
+!! | errmsg         | ccpp_error_message                                     | error message for error handling in CCPP                                 | none          |    0 | character         | len=*     | out    | F        |
+!! | errflg         | ccpp_error_flag                                        | error flag for error handling in CCPP                                    | flag          |    0 | integer           |           | out    | F        |
 !!
     subroutine cu_gf_driver_pre_run (Model, Statein, Grid, Tbd, errmsg, errflg)
 
