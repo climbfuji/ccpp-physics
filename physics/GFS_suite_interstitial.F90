@@ -14,21 +14,22 @@
 !> \section arg_table_GFS_suite_interstitial_rad_reset_run Argument Table
 !! \htmlinclude GFS_suite_interstitial_rad_reset_run.html
 !!
-    subroutine GFS_suite_interstitial_rad_reset_run (Interstitial, errmsg, errflg)
+    subroutine GFS_suite_interstitial_rad_reset_run (Interstitial, Model, errmsg, errflg)
 
-      use GFS_typedefs, only: GFS_interstitial_type
+      use GFS_typedefs, only: GFS_control_type,GFS_interstitial_type
 
       implicit none
 
       ! interface variables
       type(GFS_interstitial_type), intent(inout) :: Interstitial
+      type(GFS_control_type),      intent(in)    :: Model
       character(len=*), intent(out) :: errmsg
       integer, intent(out) :: errflg
 
       errmsg = ''
       errflg = 0
 
-      call Interstitial%rad_reset()
+      call Interstitial%rad_reset(Model)
 
     end subroutine GFS_suite_interstitial_rad_reset_run
 
@@ -84,7 +85,7 @@
 !! \htmlinclude GFS_suite_interstitial_1_run.html
 !!
     subroutine GFS_suite_interstitial_1_run (im, levs, ntrac, dtf, dtp, slmsk, area, dxmin, dxinv, pgr, &
-      frain, islmsk, work1, work2, psurf, dudt, dvdt, dtdt, dtdtc, dqdt, errmsg, errflg)
+      islmsk, work1, work2, psurf, dudt, dvdt, dtdt, dtdtc, dqdt, errmsg, errflg)
 
       use machine,               only: kind_phys
 
@@ -95,7 +96,6 @@
       real(kind=kind_phys), intent(in) :: dtf, dtp, dxmin, dxinv
       real(kind=kind_phys), intent(in), dimension(im) :: slmsk, area, pgr
 
-      real(kind=kind_phys), intent(out) :: frain
       integer,              intent(out), dimension(im) :: islmsk
       real(kind=kind_phys), intent(out), dimension(im) :: work1, work2, psurf
       real(kind=kind_phys), intent(out), dimension(im,levs) :: dudt, dvdt, dtdt, dtdtc
@@ -109,8 +109,6 @@
       ! Initialize CCPP error handling variables
       errmsg = ''
       errflg = 0
-
-      frain = dtf / dtp
 
       do i = 1, im
         islmsk(i)   = nint(slmsk(i))
@@ -144,6 +142,9 @@
 
   module GFS_suite_interstitial_2
 
+  use machine, only: kind_phys
+  real(kind=kind_phys), parameter :: one = 1.0d0
+
   contains
 
     subroutine GFS_suite_interstitial_2_init ()
@@ -156,32 +157,39 @@
 !! \htmlinclude GFS_suite_interstitial_2_run.html
 !!
 #endif
-    subroutine GFS_suite_interstitial_2_run (im, levs, lssav, ldiag3d, lsidea, cplflx, flag_cice, shal_cnv, old_monin, mstrat,  &
-      do_shoc, imfshalcnv, dtf, xcosz, adjsfcdsw, adjsfcdlw, pgr, ulwsfc_cice, lwhd, htrsw, htrlw, xmu, ctei_rm, work1, work2,  &
-      prsi, tgrs, prsl, qgrs_water_vapor, qgrs_cloud_water, cp, hvap, prslk,                                                    &
-      suntim, adjsfculw, dlwsfc, ulwsfc, psmean, dt3dt_lw, dt3dt_sw, dt3dt_pbl, dt3dt_dcnv, dt3dt_scnv, dt3dt_mp, ctei_rml,     &
-      ctei_r, kinver, errmsg, errflg)
-
-      use machine,               only: kind_phys
+    subroutine GFS_suite_interstitial_2_run (im, levs, lssav, ldiag3d, lsidea, cplflx, flag_cice, shal_cnv, old_monin, mstrat,       &
+      do_shoc, frac_grid, imfshalcnv, dtf, xcosz, adjsfcdsw, adjsfcdlw, cice, pgr, ulwsfc_cice, lwhd, htrsw, htrlw, xmu, ctei_rm,    &
+      work1, work2, prsi, tgrs, prsl, qgrs_water_vapor, qgrs_cloud_water, cp, hvap, prslk, suntim, adjsfculw, adjsfculw_lnd,         &
+      adjsfculw_ice, adjsfculw_ocn, dlwsfc, ulwsfc, psmean, dt3dt_lw, dt3dt_sw, dt3dt_pbl, dt3dt_dcnv, dt3dt_scnv, dt3dt_mp,         &
+      ctei_rml, ctei_r, kinver, dry, icy, wet, frland, huge, errmsg, errflg)
 
       implicit none
 
       ! interface variables
-      integer,              intent(in) :: im, levs, imfshalcnv
-      logical,              intent(in) :: lssav, ldiag3d, lsidea, cplflx, shal_cnv, old_monin, mstrat, do_shoc
-      real(kind=kind_phys), intent(in) :: dtf, cp, hvap
+      integer,              intent(in   ) :: im, levs, imfshalcnv
+      logical,              intent(in   ) :: lssav, ldiag3d, lsidea, cplflx, shal_cnv
+      logical,              intent(in   ) :: old_monin, mstrat, do_shoc, frac_grid
+      real(kind=kind_phys), intent(in   ) :: dtf, cp, hvap
 
-      logical,              intent(in), dimension(im) :: flag_cice
-      real(kind=kind_phys), intent(in), dimension(2) :: ctei_rm
-      real(kind=kind_phys), intent(in), dimension(im) :: xcosz, adjsfcdsw, adjsfcdlw, pgr, xmu, ulwsfc_cice, work1, work2
-      real(kind=kind_phys), intent(in), dimension(im, levs) :: htrsw, htrlw, tgrs, prsl, qgrs_water_vapor, qgrs_cloud_water, prslk
-      real(kind=kind_phys), intent(in), dimension(im, levs+1) :: prsi
-      real(kind=kind_phys), intent(in), dimension(im, levs, 6) :: lwhd
+      logical,              intent(in   ), dimension(im) :: flag_cice
+      real(kind=kind_phys), intent(in   ), dimension(2) :: ctei_rm
+      real(kind=kind_phys), intent(in   ), dimension(im) :: xcosz, adjsfcdsw, adjsfcdlw, pgr, xmu, ulwsfc_cice, work1, work2
+      real(kind=kind_phys), intent(in   ), dimension(im) :: cice
+      real(kind=kind_phys), intent(in   ), dimension(im, levs) :: htrsw, htrlw, tgrs, prsl, qgrs_water_vapor, qgrs_cloud_water, prslk
+      real(kind=kind_phys), intent(in   ), dimension(im, levs+1) :: prsi
+      real(kind=kind_phys), intent(in   ), dimension(im, levs, 6) :: lwhd
 
       integer,              intent(inout), dimension(im) :: kinver
-      real(kind=kind_phys), intent(inout), dimension(im) :: suntim, dlwsfc, ulwsfc, psmean, adjsfculw, ctei_rml, ctei_r
+      real(kind=kind_phys), intent(inout), dimension(im) :: suntim, dlwsfc, ulwsfc, psmean, ctei_rml, ctei_r
+      real(kind=kind_phys), intent(in   ), dimension(im) :: adjsfculw_lnd, adjsfculw_ice, adjsfculw_ocn
+      real(kind=kind_phys), intent(  out), dimension(im) :: adjsfculw
+
       ! These arrays are only allocated if ldiag3d is .true.
       real(kind=kind_phys), intent(inout), dimension(:,:) :: dt3dt_lw, dt3dt_sw, dt3dt_pbl, dt3dt_dcnv, dt3dt_scnv, dt3dt_mp
+
+      logical,              intent(in   ), dimension(im) :: dry, icy, wet
+      real(kind=kind_phys), intent(in   ), dimension(im) :: frland
+      real(kind=kind_phys), intent(in   ) :: huge
 
       character(len=*),     intent(out) :: errmsg
       integer,              intent(out) :: errflg
@@ -217,11 +225,45 @@
         enddo
 
 !  --- ...  sfc lw fluxes used by atmospheric model are saved for output
-        if (cplflx) then
+
+        if (frac_grid) then
           do i=1,im
-            if (flag_cice(i)) adjsfculw(i) = ulwsfc_cice(i)
+            tem = one - cice(i) - frland(i)
+            if (flag_cice(i)) then
+              adjsfculw(i) = adjsfculw_lnd(i) * frland(i) &
+                           + ulwsfc_cice(i)   * cice(i)   &
+                           + adjsfculw_ocn(i) * tem
+            else
+              adjsfculw(i) = adjsfculw_lnd(i) * frland(i) &
+                           + adjsfculw_ice(i) * cice(i)   &
+                           + adjsfculw_ocn(i) * tem
+            endif
+          enddo
+        else
+          do i=1,im
+            if (dry(i)) then                     ! all land
+              adjsfculw(i) = adjsfculw_lnd(i)
+            elseif (icy(i)) then                 ! ice (and water)
+              tem = one - cice(i)
+              if (flag_cice(i)) then
+                if (wet(i) .and. adjsfculw_ocn(i) /= huge) then
+                  adjsfculw(i) = ulwsfc_cice(i)*cice(i) + adjsfculw_ocn(i)*tem
+                else
+                  adjsfculw(i) = ulwsfc_cice(i)
+                endif
+              else
+                if (wet(i) .and. adjsfculw_ocn(i) /= huge) then
+                  adjsfculw(i) = adjsfculw_ice(i)*cice(i) + adjsfculw_ocn(i)*tem
+                else
+                  adjsfculw(i) = adjsfculw_ice(i)
+                endif
+              endif
+            else                                 ! all water
+              adjsfculw(i) = adjsfculw_ocn(i)
+            endif
           enddo
         endif
+
         do i=1,im
           dlwsfc(i) = dlwsfc(i) +   adjsfcdlw(i)*dtf
           ulwsfc(i) = ulwsfc(i) +   adjsfculw(i)*dtf
@@ -253,8 +295,8 @@
 
       do i=1, im
         invrsn(i) = .false.
-        tx1(i) = 0.0
-        tx2(i) = 10.0
+        tx1(i)    = 0.0
+        tx2(i)    = 10.0
         ctei_r(i) = 10.0
       end do
 
@@ -393,7 +435,6 @@
       errmsg = ''
       errflg = 0
 
-      ! DH* add gw_dXdt terms here
       gt0(:,:)   = tgrs(:,:)   + dtdt(:,:)   * dtp
       gu0(:,:)   = ugrs(:,:)   + dudt(:,:)   * dtp
       gv0(:,:)   = vgrs(:,:)   + dvdt(:,:)   * dtp
@@ -419,11 +460,16 @@
 !! \htmlinclude GFS_suite_interstitial_3_run.html
 !!
 #endif
-    subroutine GFS_suite_interstitial_3_run (im, levs, nn, cscnv, satmedmf, trans_trac, do_shoc, ltaerosol, ntrac, ntcw,  &
-      ntiw, ntclamt, ntrw, ntsw, ntrnc, ntsnc, ntgl, ntgnc, xlat, gq0, imp_physics, imp_physics_mg, imp_physics_zhao_carr,&
-      imp_physics_zhao_carr_pdf, imp_physics_gfdl, imp_physics_thompson, imp_physics_wsm6, prsi, prsl, prslk, rhcbot,     &
-      rhcpbl, rhctop, rhcmax, islmsk, work1, work2, kpbl, kinver,                                                         &
-      clw, rhc, save_qc, save_qi, errmsg, errflg)
+    subroutine GFS_suite_interstitial_3_run (im, levs, nn, cscnv,       &
+               satmedmf, trans_trac, do_shoc, ltaerosol, ntrac, ntcw,   &
+               ntiw, ntclamt, ntrw, ntsw, ntrnc, ntsnc, ntgl, ntgnc,    &
+               xlat, gq0, imp_physics, imp_physics_mg,                  &
+               imp_physics_zhao_carr, imp_physics_zhao_carr_pdf,        &
+               imp_physics_gfdl, imp_physics_thompson,                  &
+               imp_physics_wsm6, imp_physics_fer_hires, prsi,           &
+               prsl, prslk, rhcbot,rhcpbl, rhctop, rhcmax, islmsk,      &
+               work1, work2, kpbl, kinver,clw, rhc, save_qc, save_qi,   &
+               errmsg, errflg)
 
       use machine, only: kind_phys
 
@@ -432,7 +478,7 @@
       ! interface variables
       integer,                                          intent(in) :: im, levs, nn, ntrac, ntcw, ntiw, ntclamt, ntrw,     &
         ntsw, ntrnc, ntsnc, ntgl, ntgnc, imp_physics, imp_physics_mg, imp_physics_zhao_carr, imp_physics_zhao_carr_pdf,   &
-        imp_physics_gfdl, imp_physics_thompson, imp_physics_wsm6
+        imp_physics_gfdl, imp_physics_thompson, imp_physics_wsm6,imp_physics_fer_hires
       integer, dimension(im),                           intent(in) :: islmsk, kpbl, kinver
       logical,                                          intent(in) :: cscnv, satmedmf, trans_trac, do_shoc, ltaerosol
 
@@ -579,7 +625,7 @@
         else
           save_qi(:,:) = clw(:,:,1)
         endif
-      elseif (imp_physics == imp_physics_wsm6 .or. imp_physics == imp_physics_mg) then
+      elseif (imp_physics == imp_physics_wsm6 .or. imp_physics == imp_physics_mg .or. imp_physics == imp_physics_fer_hires) then
         do k=1,levs
           do i=1,im
             clw(i,k,1) = gq0(i,k,ntiw)                    ! ice
@@ -613,10 +659,10 @@
 !> \section arg_table_GFS_suite_interstitial_4_run Argument Table
 !! \htmlinclude GFS_suite_interstitial_4_run.html
 !!
-    subroutine GFS_suite_interstitial_4_run (imfdeepcnv, im, levs, ltaerosol, lgocart, cplchm, tracers_total, ntrac, ntcw, ntiw, ntclamt, &
-      ntrw, ntsw, ntrnc, ntsnc, ntgl, ntgnc, ntlnc, ntinc, nn, imp_physics, imp_physics_gfdl, imp_physics_thompson,           &
-      imp_physics_zhao_carr, imp_physics_zhao_carr_pdf, dtf, save_qc, save_qi, con_pi,                                        &
-      gq0, clw, dqdti, errmsg, errflg)
+    subroutine GFS_suite_interstitial_4_run (im, levs, ltaerosol, cplchm, tracers_total, ntrac, ntcw, ntiw, ntclamt, &
+      ntrw, ntsw, ntrnc, ntsnc, ntgl, ntgnc, ntlnc, ntinc, nn, imp_physics, imp_physics_gfdl, imp_physics_thompson,  &
+      imp_physics_zhao_carr, imp_physics_zhao_carr_pdf, dtf, save_qc, save_qi, con_pi,                               &
+      gq0, clw, dqdti, imfdeepcnv, imfdeepcnv_gf, errmsg, errflg)
 
       use machine,               only: kind_phys
 
@@ -624,11 +670,11 @@
 
       ! interface variables
 
-      integer,                                  intent(in) :: imfdeepcnv, im, levs, tracers_total, ntrac, ntcw, ntiw, ntclamt, ntrw,  &
+      integer,                                  intent(in) :: im, levs, tracers_total, ntrac, ntcw, ntiw, ntclamt, ntrw,  &
         ntsw, ntrnc, ntsnc, ntgl, ntgnc, ntlnc, ntinc, nn, imp_physics, imp_physics_gfdl, imp_physics_thompson,           &
-        imp_physics_zhao_carr, imp_physics_zhao_carr_pdf
+        imp_physics_zhao_carr, imp_physics_zhao_carr_pdf, imfdeepcnv, imfdeepcnv_gf
 
-      logical,                                  intent(in) :: ltaerosol, lgocart, cplchm
+      logical,                                  intent(in) :: ltaerosol, cplchm
 
       real(kind=kind_phys),                     intent(in) :: con_pi, dtf
       real(kind=kind_phys), dimension(im,levs), intent(in) :: save_qc
@@ -639,6 +685,7 @@
       real(kind=kind_phys), dimension(im,levs,nn),    intent(inout) :: clw
       ! dqdti may not be allocated
       real(kind=kind_phys), dimension(:,:),           intent(inout) :: dqdti
+
 
       character(len=*), intent(out) :: errmsg
       integer,          intent(out) :: errflg
@@ -689,8 +736,7 @@
               gq0(i,k,ntcw) = clw(i,k,2)                     ! water
             enddo
           enddo
-!         if (imp_physics == imp_physics_thompson) then
-          if (imp_physics == imp_physics_thompson .and. imfdeepcnv /= 3) then
+          if (imp_physics == imp_physics_thompson .and. imfdeepcnv /= imfdeepcnv_gf) then
             if (ltaerosol) then
               do k=1,levs
                 do i=1,im
@@ -709,6 +755,7 @@
               enddo
             endif
           endif
+
         else
           do k=1,levs
             do i=1,im
@@ -725,7 +772,7 @@
       endif   ! end if_ntcw
 
 ! dqdt_v : instaneous moisture tendency (kg/kg/sec)
-      if (lgocart .or. cplchm) then
+      if (cplchm) then
         do k=1,levs
           do i=1,im
             dqdti(i,k) = dqdti(i,k) * (1.0 / dtf)

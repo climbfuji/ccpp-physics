@@ -75,8 +75,7 @@ contains
                hbot,htop,kcnv,xland,hfx2,qfx2,cliw,clcw,                        &
                pbl,ud_mf,dd_mf,dt_mf,cnvw_moist,cnvc,imfshalcnv,                &
                nwfa,con_rd,gq0,ntinc,ntlnc,imp_physics,imp_physics_thompson,    &
-               qci_conv,                                                        &
-               errmsg,errflg)
+               qci_conv,errmsg,errflg)
 !-------------------------------------------------------------
       implicit none
       integer, parameter :: maxiens=1
@@ -99,8 +98,8 @@ contains
    integer      :: its,ite, jts,jte, kts,kte 
    integer, intent(in   ) :: im,ix,km,ntracer
 
-   real(kind=kind_phys),  dimension( ix , km ),     intent(in ) :: forcet,forceqv_spechum,w,phil
-   real(kind=kind_phys),  dimension( ix , km ),     intent(inout ) :: t,us,vs
+   real(kind=kind_phys),  dimension( ix , km ), intent(in )    :: forcet,forceqv_spechum,w,phil
+   real(kind=kind_phys),  dimension( ix , km ), intent(inout ) :: t,us,vs
    real(kind=kind_phys),  dimension( ix , km ), intent(inout ) :: qci_conv
    real(kind=kind_phys),  dimension( ix )   :: rand_mom,rand_vmas
    real(kind=kind_phys),  dimension( ix,4 ) :: rand_clos
@@ -879,7 +878,6 @@ contains
 !
 ! Scale dry mixing ratios for water wapor and cloud water to specific humidy / moist mixing ratios
 !
-
         qv_spechum = qv/(1.0_kind_phys+qv)
         cnvw_moist = cnvw/(1.0_kind_phys+qv)
 !
