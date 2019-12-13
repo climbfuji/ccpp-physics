@@ -113,6 +113,14 @@
   type = integer
   intent = in
   optional = F
+[imfdeepcnv_gf]
+  standard_name = flag_for_gf_deep_convection_scheme
+  long_name = flag for Grell-Freitas deep convection scheme
+  units = flag
+  dimensions = ()
+  type = integer
+  intent = in
+  optional = F
 [qc_save]
   standard_name = cloud_condensed_water_mixing_ratio_save
   long_name = moist (dry+vapor, no condensates) mixing ratio of cloud water (condensate) before entering a physics scheme

@@ -31,13 +31,13 @@
 !!
 !>\section sgscloud_radpre GSD SGS Scheme General Algorithm
 !> @{
-SUBROUTINE sgscloud_radpre_run(                 &
+SUBROUTINE sgscloud_radpre_run(            &
      &     ix,im,levs,                     &
      &     flag_init,flag_restart,         &
      &     qc, qi, T3D,                    &
      &     qr, qs,                         &
      &     qci_conv,                       &
-     &     imfdeepcnv,                     &
+     &     imfdeepcnv, imfdeepcnv_gf,      &
      &     qc_save, qi_save,               &
      &     qc_bl,cldfra_bl,                &
      &     delp,clouds1,clouds2,clouds3,   &
@@ -57,11 +57,12 @@ SUBROUTINE sgscloud_radpre_run(                 &
 !------------------------------------------------------------------- 
       ! Interface variables
       real (kind=kind_phys), parameter :: gfac=1.0e5/con_g
-      integer, intent(in)  :: ix, im, levs, imfdeepcnv, nlay
+      integer, intent(in)  :: ix, im, levs, imfdeepcnv, imfdeepcnv_gf, nlay
       logical,          intent(in)  :: flag_init, flag_restart
       real(kind=kind_phys), dimension(im,levs), intent(inout) :: qc, qi
       real(kind=kind_phys), dimension(im,levs), intent(inout) :: qr, qs
-      real(kind=kind_phys), dimension(im,levs), intent(inout) :: qci_conv
+      ! qci_conv only allocated for certain physics
+      real(kind=kind_phys), dimension(:,:),     intent(inout) :: qci_conv
       real(kind=kind_phys), dimension(im,levs), intent(in)    :: T3D,delp
       real(kind=kind_phys), dimension(im,levs), intent(inout) :: &
            &         clouds1,clouds2,clouds3,clouds4,clouds5
@@ -104,7 +105,7 @@ SUBROUTINE sgscloud_radpre_run(                 &
          end do
       end do
      ! add convective clouds
-      IF (imfdeepcnv == 3) THEN
+      IF (imfdeepcnv == imfdeepcnv_gf) THEN
         do k = 1, levs
            do i = 1, im
               IF (qc(i,k) < 1.E-6 .AND. qi(i,k) < 1.E-8) THEN
