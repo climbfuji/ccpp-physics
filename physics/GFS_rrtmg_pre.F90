@@ -756,16 +756,28 @@
             Tbd%phy_f3d(:,:,Model%nseffr) = 250.
           endif
 
-          call progcld5 (plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,     &  !  --- inputs
+          if (Model%imfdeepcnv==Model%imfdeepcnv_gf) then
+            call progcld5 (plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,   &  !  --- inputs
                          Grid%xlat,Grid%xlon,Sfcprop%slmsk,dz,delp, &
                          ntrac-1, ntcw-1,ntiw-1,ntrw-1,             &
                          ntsw-1,ntgl-1,                             &
                          im, lmk, lmp, Model%uni_cld,               &
                          Model%lmfshal,Model%lmfdeep2,              &
-                         Coupling%qci_conv,                         &
+                         cldcov(:,1:LMK),Tbd%phy_f3d(:,:,1),        &
+                         Tbd%phy_f3d(:,:,2), Tbd%phy_f3d(:,:,3),    &
+                         clouds,cldsa,mtopa,mbota, de_lgth,         &  !  --- outputs
+                         qci_conv=Coupling%qci_conv)                   !  --- input (optional)
+          else
+              call progcld5 (plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1, &  !  --- inputs
+                         Grid%xlat,Grid%xlon,Sfcprop%slmsk,dz,delp, &
+                         ntrac-1, ntcw-1,ntiw-1,ntrw-1,             &
+                         ntsw-1,ntgl-1,                             &
+                         im, lmk, lmp, Model%uni_cld,               &
+                         Model%lmfshal,Model%lmfdeep2,              &
                          cldcov(:,1:LMK),Tbd%phy_f3d(:,:,1),        &
                          Tbd%phy_f3d(:,:,2), Tbd%phy_f3d(:,:,3),    &
                          clouds,cldsa,mtopa,mbota, de_lgth)            !  --- outputs
+          end if
 
         endif                            ! end if_imp_physics
 

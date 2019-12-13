@@ -64,7 +64,10 @@
 !            uni_cld, lmfshal, lmfdeep2, cldcov,                       !
 !            re_cloud,re_ice,re_snow,                                  !
 !          outputs:                                                    !
-!            clouds,clds,mtop,mbot,de_lgth)                            !
+!            clouds,clds,mtop,mbot,de_lgth,                            !
+!          input (optional):                                           !
+!            qci_conv                                                  !
+!           )                                                          !
 !                                                                      !
 !       'progclduni'           --- for unified clouds with MG microphys!
 !          inputs:                                                     !
@@ -2340,13 +2343,13 @@
 !! microphysics scheme.
       subroutine progcld5                                               &
      &     ( plyr,plvl,tlyr,qlyr,qstl,rhly,clw,                         &    !  ---  inputs:
-     &       xlat,xlon,slmsk,dz,delp,                                   & 
-     &       ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,                            &            
+     &       xlat,xlon,slmsk,dz,delp,                                   &
+     &       ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,                            &
      &       IX, NLAY, NLP1,                                            &
-     &       uni_cld, lmfshal, lmfdeep2, qci_conv, cldcov,              &    
-!    &       uni_cld, lmfshal, lmfdeep2, cldcov,                        &    
-     &       re_cloud,re_ice,re_snow,                                   & 
-     &       clouds,clds,mtop,mbot,de_lgth                              &    !  ---  outputs:
+     &       uni_cld, lmfshal, lmfdeep2, cldcov,                        &
+     &       re_cloud,re_ice,re_snow,                                   &
+     &       clouds,clds,mtop,mbot,de_lgth,                             &    !  ---  outputs:
+     &       qci_conv                                                   &    !  ---  optional input
      &      )
 
 ! =================   subprogram documentation block   ================ !
@@ -2439,7 +2442,8 @@
      &       re_cloud, re_ice, re_snow 
 
       real (kind=kind_phys), dimension(:,:,:), intent(in) :: clw
-      real (kind=kind_phys), dimension(:,:), intent(in) :: qci_conv   
+      real (kind=kind_phys), dimension(:,:),   intent(in), optional ::  &
+     &       qci_conv
 
       real (kind=kind_phys), dimension(:),   intent(in) :: xlat, xlon,  &
      &       slmsk
@@ -2514,13 +2518,20 @@
 !        enddo
 !      endif
 
-        do k = 1, NLAY
-          do i = 1, IX
-            clwf(i,k) = clw(i,k,ntcw) +  clw(i,k,ntiw) + clw(i,k,ntsw)  &
-     &                                +  qci_conv(i,k)
-!           clwf(i,k) = clw(i,k,ntcw) +  clw(i,k,ntiw) + clw(i,k,ntsw)
+        if (present(qci_conv)) then
+          do k = 1, NLAY
+            do i = 1, IX
+              clwf(i,k) = clw(i,k,ntcw) +  clw(i,k,ntiw) + clw(i,k,ntsw)
+     &                                  +  qci_conv(i,k)
+            enddo
           enddo
-        enddo
+        else
+          do k = 1, NLAY
+            do i = 1, IX
+              clwf(i,k) = clw(i,k,ntcw) +  clw(i,k,ntiw) + clw(i,k,ntsw)
+            enddo
+          enddo
+        endif
 !> - Find top pressure for each cloud domain for given latitude.
 !! ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
 !! i=1,2 are low-lat (<45 degree) and pole regions)
