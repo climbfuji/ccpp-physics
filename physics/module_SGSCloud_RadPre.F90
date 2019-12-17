@@ -34,6 +34,7 @@
 SUBROUTINE sgscloud_radpre_run(            &
      &     ix,im,levs,                     &
      &     flag_init,flag_restart,         &
+     &     do_mynnedmf,                    &
      &     qc, qi, T3D,                    &
      &     qr, qs,                         &
      &     qci_conv,                       &
@@ -58,7 +59,7 @@ SUBROUTINE sgscloud_radpre_run(            &
       ! Interface variables
       real (kind=kind_phys), parameter :: gfac=1.0e5/con_g
       integer, intent(in)  :: ix, im, levs, imfdeepcnv, imfdeepcnv_gf, nlay
-      logical,          intent(in)  :: flag_init, flag_restart
+      logical,          intent(in)  :: flag_init, flag_restart, do_mynnedmf
       real(kind=kind_phys), dimension(im,levs), intent(inout) :: qc, qi
       real(kind=kind_phys), dimension(im,levs), intent(inout) :: qr, qs
       ! qci_conv only allocated for certain physics
@@ -110,8 +111,8 @@ SUBROUTINE sgscloud_radpre_run(            &
            do i = 1, im
               IF (qc(i,k) < 1.E-6 .AND. qi(i,k) < 1.E-8) THEN
                 !Partition the convective clouds into water & ice according to a linear
-                qc(i,k) = qci_conv(i,k)*(MIN(1., MAX(0., (T3D(i,k)-244.)/25.)))
-                qi(i,k) = qci_conv(i,k)*(1. - MIN(1., MAX(0., (T3D(i,k)-244.)/25.)))
+                qc(i,k) = qc(i,k)+qci_conv(i,k)*(MIN(1., MAX(0., (T3D(i,k)-244.)/25.)))
+                qi(i,k) = qi(i,k)+qci_conv(i,k)*(1. - MIN(1., MAX(0., (T3D(i,k)-244.)/25.)))
 
                 Tc = T3D(i,k) - 273.15
 
@@ -131,12 +132,13 @@ SUBROUTINE sgscloud_radpre_run(            &
       ENDIF
  
      ! add boundary layer clouds
+      IF (do_mynnedmf == .true.) THEN
       do k = 1, levs
         do i = 1, im
 
-         IF( qr(i,k) > 1.0e-7 .OR. qs(i,k) > 1.0e-7)THEN
+         IF (qr(i,k) > 1.0e-7 .OR. qs(i,k) > 1.0e-7 .OR. (imfdeepcnv == imfdeepcnv_gf .AND. qci_conv(i,k)>1.0e-7)) THEN
              !Keep Xu-RandalL clouds fraction - do not overwrite
-         ELSE 
+         ELSE
              clouds1(i,k) = CLDFRA_BL(i,k)
          ENDIF
 
@@ -172,6 +174,7 @@ SUBROUTINE sgscloud_radpre_run(            &
              ENDIF
          enddo
       enddo
+      ENDIF ! do_mynnedmf
 
 !> - Compute SFC/low/middle/high cloud top pressure for each cloud domain for given latitude.
 
