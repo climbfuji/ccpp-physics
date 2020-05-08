@@ -366,7 +366,7 @@
       character(len=*), intent(out) :: errmsg
       integer, intent(out) :: errflg
 
-      integer :: i, k, kk, k1, n, count_match, count_all
+      integer :: i, k, kk, k1, n
       real(kind=kind_phys) :: tem, tem1, rho
 
       ! Initialize CCPP error handling variables
@@ -592,41 +592,26 @@
   !       endif
 
         if_diag: if (ldiag3d .and. flag_for_pbl_generic_tend .and. lssav) then
-          count_match=0
-          count_all=0
           if (lsidea) then
             dt3dt(1:im,:) = dt3dt(1:im,:) + dtdt(1:im,:)*dtf
           else
-            count_all=count_all+levs*im
             do k=1,levs
               do i=1,im
                 dt3dt(i,k) = dt3dt(i,k) + (tgrs(i,k) - save_t(i,k))
-                if(abs(tgrs(i,k)-save_t(i,k))<1e-15) &
-                     count_match=count_match+1
               enddo
             enddo
           endif
-          count_all=count_all+levs*im*2
           do k=1,levs
             do i=1,im
               du3dt_PBL(i,k) = du3dt_PBL(i,k) + (ugrs(i,k) - save_u(i,k))
-              if(abs(ugrs(i,k)-save_u(i,k))<1e-15) &
-                   count_match=count_match+1
               dv3dt_PBL(i,k) = dv3dt_PBL(i,k) + (vgrs(i,k) - save_v(i,k))
-              if(abs(vgrs(i,k)-save_v(i,k))<1e-15) &
-                   count_match=count_match+1
             enddo
           enddo
           if(qdiag3d) then
-            count_all=count_all+levs*im*2
             do k=1,levs
               do i=1,im
                 dq3dt(i,k)   = dq3dt(i,k) + (qgrs(i,k,ntqv)-save_q(i,k,ntqv))
-                if(abs(qgrs(i,k,ntqv)-save_q(i,k,ntqv))<1e-15) &
-                     count_match=count_match+1
                 dq3dt_ozone(i,k) = dq3dt_ozone(i,k) + (qgrs(i,k,ntoz)-save_q(i,k,ntoz))
-                if(abs(qgrs(i,k,ntoz)-save_q(i,k,ntoz))<1e-15) &
-                     count_match=count_match+1
               enddo
             enddo
           endif
