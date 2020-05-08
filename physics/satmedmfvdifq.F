@@ -65,6 +65,7 @@
      &     prsi,del,prsl,prslk,phii,phil,delt,                          &
      &     dspheat,dusfc,dvsfc,dtsfc,dqsfc,hpbl,                        &
      &     kinver,xkzm_m,xkzm_h,xkzm_s,dspfac,bl_upfr,bl_dnfr,          &
+     &     ntoz,du3dt,dv3dt,dt3dt,dq3dt,do3dt,ldiag3d,qdiag3d,          &
      &     errmsg,errflg)
 !
       use machine  , only : kind_phys
@@ -73,9 +74,10 @@
       implicit none
 !
 !----------------------------------------------------------------------
-      integer, intent(in)  :: ix, im, km, ntrac, ntcw, ntiw, ntke
+      integer, intent(in)  :: ix, im, km, ntrac, ntcw, ntiw, ntke, ntoz
       integer, intent(in)  :: kinver(im)
       integer, intent(out) :: kpbl(im)
+      logical, intent(in)  :: ldiag3d,qdiag3d
 !
       real(kind=kind_phys), intent(in) :: grav,rd,cp,rv,hvap,hfus,fv,   &
      &                                    eps,epsm1
@@ -97,6 +99,10 @@
      &                     prsi(ix,km+1), del(ix,km),                   &
      &                     prsl(ix,km),   prslk(ix,km),                 &
      &                     phii(ix,km+1), phil(ix,km)
+      real(kind=kind_phys), intent(inout) ::                            &
+     &                     du3dt(ix,km),  dv3dt(ix,km),                 &
+     &                     dt3dt(ix,km),  dq3dt(ix,km),                 &
+     &                     do3dt(ix,km)
       real(kind=kind_phys), intent(out) ::                              &
      &                     dusfc(im),     dvsfc(im),                    &
      &                     dtsfc(im),     dqsfc(im),                    &
@@ -1301,6 +1307,12 @@ c
             rtg(i,k,1) = rtg(i,k,1)+qtend
             dtsfc(i)   = dtsfc(i)+cont*del(i,k)*ttend
             dqsfc(i)   = dqsfc(i)+conq*del(i,k)*qtend
+            if(ldiag3d) then
+               dt3dt(i,k) = dt3dt(i,k)+dspfac*ttend
+               if(qdiag3d) then
+                  dq3dt(i,k) = dq3dt(i,k)+dspfac*qtend
+               endif
+            endif
          enddo
       enddo
 !
@@ -1311,6 +1323,9 @@ c
             do i = 1, im
               qtend = (f2(i,k+is)-q1(i,k,kk))*rdt
               rtg(i,k,kk) = rtg(i,k,kk)+qtend
+              if(kk==ntoz) then
+                 do3dt(i,k) = do3dt(i,k)+qtend
+              endif
             enddo
           enddo
         enddo
@@ -1325,6 +1340,9 @@ c
 !         ttend = tem / cp
           ttend = diss(i,k) / cp
           tdt(i,k) = tdt(i,k) + dspfac * ttend
+          if(ldiag3d) then
+             dt3dt(i,k) = dt3dt(i,k)+dspfac * ttend
+          endif
         enddo
       enddo
       endif
@@ -1401,6 +1419,11 @@ c
             dv(i,k)  = dv(i,k)+vtend
             dusfc(i) = dusfc(i)+conw*del(i,k)*utend
             dvsfc(i) = dvsfc(i)+conw*del(i,k)*vtend
+
+            if(ldiag3d) then
+               du3dt(i,k) = du3dt(i,k) + utend
+               dv3dt(i,k) = dv3dt(i,k) + vtend
+            endif
          enddo
       enddo
 !
