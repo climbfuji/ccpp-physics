@@ -99,10 +99,10 @@
      &                     prsi(ix,km+1), del(ix,km),                   &
      &                     prsl(ix,km),   prslk(ix,km),                 &
      &                     phii(ix,km+1), phil(ix,km)
-      real(kind=kind_phys), intent(inout) ::                            &
-     &                     du3dt(ix,km),  dv3dt(ix,km),                 &
-     &                     dt3dt(ix,km),  dq3dt(ix,km),                 &
-     &                     do3dt(ix,km)
+      real(kind=kind_phys), intent(inout), dimension(:,:) ::            &
+     &                     du3dt(:,:),    dv3dt(:,:),                   &
+     &                     dt3dt(:,:),    dq3dt(:,:),                   &
+     &                     do3dt(:,:)
       real(kind=kind_phys), intent(out) ::                              &
      &                     dusfc(im),     dvsfc(im),                    &
      &                     dtsfc(im),     dqsfc(im),                    &
