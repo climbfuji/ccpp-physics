@@ -591,7 +591,7 @@
   !    &     dtf,' kdt=',kdt,' lat=',lat
   !       endif
 
-        if_diag: if (ldiag3d .and. flag_for_pbl_generic_tend .and. lssav) then
+        if (ldiag3d .and. flag_for_pbl_generic_tend .and. lssav) then
           if (lsidea) then
             dt3dt(1:im,:) = dt3dt(1:im,:) + dtdt(1:im,:)*dtf
           else
@@ -615,8 +615,8 @@
               enddo
             enddo
           endif
-        endif if_diag
-        
+        endif   ! end if_diag
+
       endif   ! end if_lssav
 
       end subroutine GFS_PBL_generic_post_run
