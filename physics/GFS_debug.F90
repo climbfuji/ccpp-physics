@@ -46,7 +46,7 @@
 !!
       subroutine GFS_diagtoscreen_run (Model, Statein, Stateout, Sfcprop, Coupling,     &
                                        Grid, Tbd, Cldprop, Radtend, Diag, Interstitial, &
-                                       nthreads, blkno, errmsg, errflg)
+                                       Atm_block, nthreads, blkno, errmsg, errflg)
 
 #ifdef MPI
          use mpi
@@ -61,6 +61,7 @@
                                           GFS_tbd_type, GFS_cldprop_type,      &
                                           GFS_radtend_type, GFS_diag_type,     &
                                           GFS_interstitial_type
+         use block_control_mod,     only: block_control_type
 
          implicit none
 
@@ -76,6 +77,7 @@
          type(GFS_radtend_type),   intent(in   ) :: Radtend
          type(GFS_diag_type),      intent(in   ) :: Diag
          type(GFS_interstitial_type), intent(in) :: Interstitial
+         type(block_control_type), intent(in   ) :: Atm_block
          integer,                  intent(in   ) :: nthreads
          integer,                  intent(in   ) :: blkno
          character(len=*),           intent(out) :: errmsg

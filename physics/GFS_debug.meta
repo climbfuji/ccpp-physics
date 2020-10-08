@@ -89,6 +89,14 @@
   type = GFS_interstitial_type
   intent = in
   optional = F
+[Atm_block]
+  standard_name = Atm_block_instance
+  long_name = instance of derived data type Atm_block
+  units = DDT
+  dimensions = ()
+  type = block_control_type
+  intent = in
+  optional = F
 [nthreads]
   standard_name = omp_threads
   long_name = number of OpenMP threads or fast physics schemes
