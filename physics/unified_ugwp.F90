@@ -29,8 +29,6 @@
 !!       do_gsl_drag_ls_bl    -- activates RAP/HRRR (GSL) large-scale GWD and blocking
 !!       do_gsl_drag_ss       -- activates RAP/HRRR (GSL) small-scale GWD
 !!       do_gsl_drag_tofd     -- activates RAP/HRRR (GSL) turbulent orographic drag
-!!       do_ugwp_v1           -- activates V1 CIRES UGWP scheme - both orographic and non-stationary GWD
-!!       do_ugwp_v1_orog_only -- activates V1 CIRES UGWP scheme - orographic GWD only
 !! Note that only one "large-scale" scheme can be activated at a time.
 !!
 
@@ -40,20 +38,12 @@ module unified_ugwp
 
     use cires_ugwp_module, only: knob_ugwp_version, cires_ugwp_mod_init, cires_ugwp_mod_finalize
 
-    use cires_ugwp_module_v1, only: cires_ugwp_init_v1, cires_ugwp_finalize, calendar_ugwp
-
     use gwdps, only: gwdps_run
 
     use drag_suite, only: drag_suite_run
 
-    use cires_ugwp_orolm97_v1, only: gwdps_oro_v1
-
-    use cires_ugwp_triggers_v1, only: slat_geos5_tamp_v1
-    
     ! use cires_ugwp_ngw_utils, only: tau_limb_advance
     
-    use cires_ugwp_solv2_v1_mod, only: cires_ugwp_solv2_v1
-
     implicit none
 
     private
@@ -78,7 +68,7 @@ contains
                 con_pi, con_rerth, pa_rf_in, tau_rf_in, con_p0, do_ugwp,       &
                 do_ugwp_v0, do_ugwp_v0_orog_only, do_ugwp_v0_nst_only,         &
                 do_gsl_drag_ls_bl, do_gsl_drag_ss, do_gsl_drag_tofd,           &
-                do_ugwp_v1, do_ugwp_v1_orog_only, errmsg, errflg)
+                errmsg, errflg)
 
 !----  initialization of unified_ugwp
     implicit none
@@ -101,8 +91,7 @@ contains
     logical,              intent (in) :: do_ugwp_v0, do_ugwp_v0_orog_only,  &
                                          do_ugwp_v0_nst_only,               &
                                          do_gsl_drag_ls_bl, do_gsl_drag_ss, &
-                                         do_gsl_drag_tofd, do_ugwp_v1,      &
-                                         do_ugwp_v1_orog_only
+                                         do_gsl_drag_tofd
 
     character(len=*), intent (in) :: fn_nml2
     !character(len=*), parameter   :: fn_nml='input.nml'
@@ -122,29 +111,12 @@ contains
 
     ! Test to make sure that at most only one large-scale/blocking
     ! orographic drag scheme is chosen
-    if ( (do_ugwp_v0.and.(do_ugwp_v0_orog_only.or.do_gsl_drag_ls_bl.or.    &
-                          do_ugwp_v1.or.do_ugwp_v1_orog_only))        .or. &
-         (do_ugwp_v0_orog_only.and.(do_gsl_drag_ls_bl.or.do_ugwp_v1.or.    &
-                                    do_ugwp_v1_orog_only))            .or. &
-         (do_gsl_drag_ls_bl.and.(do_ugwp_v1.or.do_ugwp_v1_orog_only)) .or. &
-         (do_ugwp_v1.and.do_ugwp_v1_orog_only) ) then
+    if ( (do_ugwp_v0.and.(do_ugwp_v0_orog_only.or.do_gsl_drag_ls_bl)) .or. &
+         (do_ugwp_v0_orog_only.and.do_gsl_drag_ls_bl) ) then
 
        write(errmsg,'(*(a))') "Logic error: Only one large-scale&
           &/blocking scheme (do_ugwp_v0,do_ugwp_v0_orog_only,&
-          &do_gsl_drag_ls_bl,do_ugwp_v1 or &
-          &do_ugwp_v1_orog_only) can be chosen"
-       errflg = 1
-       return
-
-    end if
-
-    ! Test to make sure that if ugwp_v0 non-stationary-only is selected that
-    ! ugwp_v1 is not also selected
-    if ( do_ugwp_v0_nst_only .and. (do_ugwp_v1.or.do_ugwp_v1_orog_only) ) then
-
-       write(errmsg,'(*(a))') "Logic error: do_ugwp_v0_nst_only can only be &
-          &selected if both do_ugwp_v1 and do_ugwp_v1_orog_only are not &
-          &selected"
+          &do_gsl_drag_ls_bl can be chosen"
        errflg = 1
        return
 
@@ -169,13 +141,6 @@ contains
     end if
 
 
-    if ( do_ugwp_v1 ) then
-       call cires_ugwp_init_v1 (me, master, nlunit, logunit, jdat, con_pi,      &
-                                con_rerth, fn_nml2, lonr, latr, levs, ak, bk,   &
-                                con_p0, dtp, cdmbgwd(1:2), cgwf, pa_rf_in,      &
-                                tau_rf_in, errmsg, errflg)
-    end if
-
     is_initialized = .true.
 
     end subroutine unified_ugwp_init
@@ -192,12 +157,11 @@ contains
 !!
 
     subroutine unified_ugwp_finalize(do_ugwp_v0,do_ugwp_v0_nst_only,  &
-                                     do_ugwp_v1,errmsg, errflg)
+                                     errmsg, errflg)
 
     implicit none
 !
-    logical,          intent (in) :: do_ugwp_v0, do_ugwp_v0_nst_only, &
-                                     do_ugwp_v1
+    logical,          intent (in) :: do_ugwp_v0, do_ugwp_v0_nst_only
     character(len=*), intent(out) :: errmsg
     integer,          intent(out) :: errflg
 
@@ -208,8 +172,6 @@ contains
     if (.not.is_initialized) return
 
     if ( do_ugwp_v0 .or. do_ugwp_v0_nst_only ) call cires_ugwp_mod_finalize()
-
-    if ( do_ugwp_v1 ) call cires_ugwp_finalize()
 
     is_initialized = .false.
 
@@ -251,7 +213,7 @@ contains
          ldu3dt_ogw, ldv3dt_ogw, ldt3dt_ogw, ldu3dt_cgw, ldv3dt_cgw, ldt3dt_cgw,       &
          ldiag3d, lssav, flag_for_gwd_generic_tend, do_ugwp_v0, do_ugwp_v0_orog_only,  &
          do_ugwp_v0_nst_only, do_gsl_drag_ls_bl, do_gsl_drag_ss, do_gsl_drag_tofd,     &
-         do_ugwp_v1, do_ugwp_v1_orog_only, gwd_opt, errmsg, errflg)
+         gwd_opt, errmsg, errflg)
 
     implicit none
 
@@ -324,8 +286,7 @@ contains
     logical,              intent (in) :: do_ugwp_v0, do_ugwp_v0_orog_only,  &
                                          do_ugwp_v0_nst_only,               &
                                          do_gsl_drag_ls_bl, do_gsl_drag_ss, &
-                                         do_gsl_drag_tofd, do_ugwp_v1,      &
-                                         do_ugwp_v1_orog_only
+                                         do_gsl_drag_tofd
 
     character(len=*),        intent(out) :: errmsg
     integer,                 intent(out) :: errflg
@@ -377,36 +338,6 @@ contains
                  cdmbgwd(1:2),me,master,lprnt,ipr,rdxzb,dx,gwd_opt,  &
                  do_gsl_drag_ls_bl,do_gsl_drag_ss,do_gsl_drag_tofd,  &
                  errmsg,errflg)
-
-    end if
-
-    if ( do_ugwp_v1.or.do_ugwp_v1_orog_only ) then
-
-       ! Valery's TOFD
-       ! topo paras
-       ! w/ orographic effects
-       if(nmtvr == 14)then
-         ! calculate sgh30 for TOFD
-         sgh30 = abs(oro - oro_uf)
-       ! w/o orographic effects
-       else
-         sgh30   = varss
-       endif
-
-       inv_g = 1./con_g
-       zmeti  = phii*inv_g
-       zmet   = phil*inv_g
-
-       call gwdps_oro_v1 (im, levs,  lonr,   do_tofd,                  &
-                      Pdvdt, Pdudt, Pdtdt, Pkdis,                      &
-                      ugrs , vgrs, tgrs, q1, KPBL, prsi,del,prsl,      &
-                      prslk, zmeti, zmet, dtp, kdt, hprime, oc, oa4,   &
-                      clx, theta, sigma, gamma, elvmax,                &
-                      con_g, con_omega, con_rd, con_cp, con_rv,con_pi, &
-                      con_rerth, con_fvirt, sgh30, DUSFCg, DVSFCg,     &
-                      xlat_d, sinlat, coslat, area,cdmbgwd(1:2), me,   &
-                      master, rdxzb, zmtb, zogw, tau_mtb, tau_ogw,     &
-                      tau_tofd, du3dt_mtb, du3dt_ogw, du3dt_tms)
 
     end if
 
