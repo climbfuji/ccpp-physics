@@ -211,7 +211,7 @@ contains
     real(kind=kind_phys), dimension(im, levs) :: Pdvdt, Pdudt
     real(kind=kind_phys), dimension(im, levs) :: Pdtdt, Pkdis
     real(kind=kind_phys), dimension(im, levs) :: ed_dudt, ed_dvdt, ed_dtdt
-    ! from ugwp_driver_v0.f -> cires_ugwp_initialize.F90 -> module ugwp_wmsdis_init
+    ! from ugwp_driver_v0.f -> cires_ugwp_initialize.F90 -> module ugwpv1_wmsdis_init
     real(kind=kind_phys), parameter :: tamp_mpa=30.e-3
     ! switches that activate impact of OGWs and NGWs (WL* how to deal with them? *WL)
     real(kind=kind_phys), parameter :: pogw=1., pngw=1., pked=1.

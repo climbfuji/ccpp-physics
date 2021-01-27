@@ -10,7 +10,7 @@
 ! 
 !
     
-    module ugwp_common
+    module ugwpv1_common
 !
      use machine,  only : kind_phys
 			 
@@ -57,12 +57,12 @@
 !      real(kind=kind_phys), parameter ::  fv   = rv/rd - 1.0    
 !      real(kind=kind_phys), parameter ::  arad = 6370.e3
         
-     end module ugwp_common
+     end module ugwpv1_common
      
       subroutine init_nazdir(naz,  xaz,  yaz)
       
       use machine,     only : kind_phys
-      use ugwp_common, only :  pi2
+      use ugwpv1_common, only :  pi2
       
       implicit none
       
@@ -100,7 +100,7 @@
      subroutine init_global_gwdis(levs, zkm, pmb, kvg, ktg, krad, kion, me, master)
 !				      
      use machine ,      only : kind_phys 
-     use ugwp_common,   only : pih, pi  
+     use ugwpv1_common,   only : pih, pi  
      
      implicit none
      integer , intent(in)                 :: me, master
@@ -188,13 +188,13 @@
 !      wave  sources
 ! ========================================================================
 !
-!    ugwp_oro_init
+!    ugwpv1_oro_init
 !
 !=========================================================================
-     module ugwp_oro_init
+     module ugwpv1_oro_init
      use machine ,    only : kind_phys
-     use ugwp_common, only : bnv2min, grav, grcp, fv, grav, cpd, grcp, pi
-     use ugwp_common, only : mkzmin, mkz2min
+     use ugwpv1_common, only : bnv2min, grav, grcp, fv, grav, cpd, grcp, pi
+     use ugwpv1_common, only : mkzmin, mkz2min
      implicit none
 !  
 ! constants and "crirtical" values to run oro-mtb_gw physics
@@ -303,7 +303,7 @@
       real(kind=kind_phys), parameter :: lonr_refgw =  192.0
       real(kind=kind_phys), parameter :: cleff_ref  = 0.5e-5           !       1256 km = 10 * 125 km ???
       
-! copy  to "ugwp_oro_init"  =>  nwaves, nazdir, nstoch
+! copy  to "ugwpv1_oro_init"  =>  nwaves, nazdir, nstoch
  
       nworo  =  nwaves
       nazoro =  nazdir
@@ -317,13 +317,13 @@
       end subroutine init_oro_gws
 !
 
-    end module ugwp_oro_init
+    end module ugwpv1_oro_init
 ! =========================================================================
 !
-!    ugwp_conv_init
+!    ugwpv1_conv_init
 !
 !=========================================================================
-    module ugwp_conv_init
+    module ugwpv1_conv_init
     
      use machine ,              only : kind_phys
 
@@ -350,7 +350,7 @@
 !
      subroutine init_conv_gws(nwaves, nazdir, nstoch, effac, lonr, kxw)
 !
-     use ugwp_common,  only : pi2, arad
+     use ugwpv1_common,  only : pi2, arad
 
      implicit none
      
@@ -400,7 +400,7 @@
      end subroutine init_conv_gws
 
 
-    end module ugwp_conv_init
+    end module ugwpv1_conv_init
 !=========================================================================
 !
 !    ugwp_fjet_init
@@ -430,7 +430,7 @@
      
      subroutine init_fjet_gws(nwaves, nazdir, nstoch, effac,lonr, kxw) 
 
-     use ugwp_common,  only : pi2, arad			      
+     use ugwpv1_common,  only : pi2, arad			      
 			      
      implicit none
 
@@ -489,7 +489,7 @@
 
 			     
      subroutine init_okw_gws(nwaves, nazdir, nstoch, effac, lonr, kxw)
-     use ugwp_common,  only : pi2, arad
+     use ugwpv1_common,  only : pi2, arad
 
      implicit none
 
@@ -575,12 +575,12 @@
   end module ugwp_lsatdis_init
 !
 !
-  module ugwp_wmsdis_init
+  module ugwpv1_wmsdis_init
   
      use machine ,    only : kind_phys    
-     use ugwp_common, only : arad, pi, pi2, hpscale, rhp, rhp2, rh4, omega2 
-     use ugwp_common, only : bnv2max,  bnv2min, minvel 
-     use ugwp_common, only : mkzmin,  mkz2min, mkzmax, mkz2max, ucrit => cdmin
+     use ugwpv1_common, only : arad, pi, pi2, hpscale, rhp, rhp2, rh4, omega2 
+     use ugwpv1_common, only : bnv2max,  bnv2min, minvel 
+     use ugwpv1_common, only : mkzmin,  mkz2min, mkzmax, mkz2max, ucrit => cdmin
      
     implicit none
 
@@ -825,4 +825,4 @@
      end subroutine initsolv_wmsdis
 !
 !
-  end module ugwp_wmsdis_init
+  end module ugwpv1_wmsdis_init

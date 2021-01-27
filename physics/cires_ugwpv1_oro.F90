@@ -39,12 +39,12 @@ contains
 !              scale-aware amplification of the momentum deposition for low-res runs
 !----------------------------------------    
 
-      use machine ,      only : kind_phys
-      use ugwp_common,   only : dw2min, velmin, grav, omega1, rd, cpd, rv, pi, arad, fv
-      use ugwp_common,   only : rcpdt,   grav2,  rgrav,  rcpd,  rcpd2
-      use ugwp_common,   only : rad_to_deg,  deg_to_rad, pi2, pih, rdi,  gor, grcp, gocp, gr2, bnv2min
+      use machine ,        only : kind_phys
+      use ugwpv1_common,   only : dw2min, velmin, grav, omega1, rd, cpd, rv, pi, arad, fv
+      use ugwpv1_common,   only : rcpdt,   grav2,  rgrav,  rcpd,  rcpd2
+      use ugwpv1_common,   only : rad_to_deg,  deg_to_rad, pi2, pih, rdi,  gor, grcp, gocp, gr2, bnv2min
        
-      use ugwp_oro_init, only : rimin,  ric,     efmin,     efmax,     &
+      use ugwpv1_oro_init, only : rimin,  ric,     efmin,     efmax,     &
                                 hpmax,  hpmin,   sigfaci => sigfac,    &
                                 dpmin,  minwnd,  hminmt,    hncrit,    &
                                 rlolev, gmax,    veleps,    factop,    &
@@ -150,7 +150,7 @@ contains
          
 !==================
 ! tofd
-!     some constants now in "use ugwp_oro_init" +   "use ugwp_common"
+!     some constants now in "use ugwpv1_oro_init" +   "use ugwpv1_common"
 !
 !==================
 
@@ -1012,7 +1012,7 @@ contains
                             zmid, utofd, vtofd, epstofd, krf_tofd)
 			    
       use machine ,       only : kind_phys 
-      use ugwp_oro_init,  only : n_tofd, const_tofd, ze_tofd, a12_tofd, ztop_tofd
+      use ugwpv1_oro_init,  only : n_tofd, const_tofd, ze_tofd, a12_tofd, ztop_tofd
 !
 ! adding the implicit tendency estimate
 !       

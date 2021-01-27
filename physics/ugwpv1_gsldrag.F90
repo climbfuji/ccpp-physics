@@ -74,7 +74,7 @@ contains
                 do_gsl_drag_ss, do_gsl_drag_tofd, do_ugwp_v1,                  &
                 do_ugwp_v1_orog_only, do_ugwp_v1_w_gsldrag, errmsg, errflg)
 		
-    use ugwp_common
+    use ugwpv1_common
     		
 !----  initialization of unified_ugwp
     implicit none
@@ -178,7 +178,7 @@ contains
     endif
 !==========================
 !
-! initialize ugwp_common
+! initialize ugwpv1_common
 !   con_pi, con_rerth, con_p0,  con_g, con_omega,  con_cp, con_rd, con_rv,con_fvirt
 !
 !==========================
@@ -332,7 +332,7 @@ contains
 
 !   
     
-    use ugwp_common, only : con_pi => pi, con_g => grav,  con_rd   => rd,   &
+    use ugwpv1_common, only : con_pi => pi, con_g => grav,  con_rd   => rd,   &
                             con_rv => rv, con_cp => cpd,  con_fv   => fv,   &
                             con_rerth => arad, con_omega => omega1, rgrav
 
@@ -450,7 +450,7 @@ contains
     real(kind=kind_phys), dimension(im, levs) :: Pdtdt, Pkdis
 !------------
 !
-! from ugwp_driver_v0.f -> cires_ugwp_initialize.F90 -> module ugwp_wmsdis_init
+! from ugwp_driver_v0.f -> cires_ugwp_initialize.F90 -> module ugwpv1_wmsdis_init
 !  now in the namelist of cires_ugwp "knob_ugwp_tauamp" controls tamp_mpa 
 !
 !        tamp_mpa =knob_ugwp_tauamp           !amplitude for GEOS-5/MERRA-2

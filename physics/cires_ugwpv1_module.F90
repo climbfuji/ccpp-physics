@@ -3,16 +3,16 @@ module  cires_ugwpv1_module
 
 !
 !   driver is called after pbl & before chem-parameterizations
-!    it uses ugwp_common (like phys_cons) and some module-param od solvers/sources init-modules
+!    it uses ugwpv1_common (like phys_cons) and some module-param od solvers/sources init-modules
 !....................................................................................
 !  order = dry-adj=>conv=mp-aero=>radiation -sfc/land- chem -> vertdiff-> [rf-gws]=> ion-re
 !...................................................................................
 !
 !
     use machine,            only : kind_phys
-    use  ugwp_common,       only : arad, pi, pi2, hpscale, rhp, rhp2, rh4, rhp4, khp, hpskm 
-    use  ugwp_wmsdis_init,  only : ilaunch, nslope, lhmet, lzmax, lzmin, lzstar   
-    use  ugwp_wmsdis_init,  only : tau_min, tamp_mpa   
+    use  ugwpv1_common,     only : arad, pi, pi2, hpscale, rhp, rhp2, rh4, rhp4, khp, hpskm 
+    use  ugwpv1_wmsdis_init,  only : ilaunch, nslope, lhmet, lzmax, lzmin, lzstar   
+    use  ugwpv1_wmsdis_init,  only : tau_min, tamp_mpa   
 
     implicit none
     logical            :: module_is_initialized
@@ -149,15 +149,15 @@ module  cires_ugwpv1_module
 !  input_nml_file ='input.nml'=fn_nml   ..... OLD_namelist and cdmvgwd(4) Corrected Bug Oct 4
 !
     use  netcdf
-    use  ugwp_oro_init,     only :  init_oro_gws
-    use  ugwp_conv_init,    only :  init_conv_gws
+    use  ugwpv1_oro_init,     only :  init_oro_gws
+    use  ugwpv1_conv_init,    only :  init_conv_gws
     use  ugwp_fjet_init,    only :  init_fjet_gws
     use  ugwp_okw_init,     only :  init_okw_gws
     use  ugwp_lsatdis_init, only :  initsolv_lsatdis    
     
-    use  ugwp_wmsdis_init,  only :  initsolv_wmsdis           
-    use  ugwp_wmsdis_init,  only :  ilaunch, nslope, lhmet, lzmax, lzmin, lzstar   
-    use  ugwp_wmsdis_init,  only :  tau_min, tamp_mpa 
+    use  ugwpv1_wmsdis_init,  only :  initsolv_wmsdis           
+    use  ugwpv1_wmsdis_init,  only :  ilaunch, nslope, lhmet, lzmax, lzmin, lzstar   
+    use  ugwpv1_wmsdis_init,  only :  tau_min, tamp_mpa 
    
     implicit none
 
