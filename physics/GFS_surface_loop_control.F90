@@ -15,11 +15,9 @@
 
 !> \brief Brief description of the subroutine
 !!
-#if 0
 !! \section arg_table_GFS_surface_loop_control_part1_run Arguments
 !! \htmlinclude GFS_surface_loop_control_part1_run.html
 !!
-#endif
 !!  \section general General Algorithm
 !!  \section detailed Detailed Algorithm
 !!  @{
@@ -71,11 +69,9 @@
 
 !> \brief Brief description of the subroutine
 !!
-#if 0
 !! \section arg_table_GFS_surface_loop_control_part2_run Arguments
 !! \htmlinclude GFS_surface_loop_control_part2_run.html
 !!
-#endif
 !!  \section general General Algorithm
 !!  \section detailed Detailed Algorithm
 !!  @{

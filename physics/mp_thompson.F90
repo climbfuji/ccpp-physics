@@ -328,7 +328,8 @@ module mp_thompson
                               spechum, qc, qr, qi, qs, qg, ni, nr, &
                               is_aerosol_aware, nc, nwfa, nifa,    &
                               nwfa2d, nifa2d,                      &
-                              tgrs, prsl, phii, omega, dtp,        &
+                              tgrs, prsl, phii, omega,             &
+                              dtp, istep, nsteps,                  &
                               prcp, rain, graupel, ice, snow, sr,  &
                               refl_10cm, reset, do_radar_ref,      &
                               re_cloud, re_ice, re_snow,           &
@@ -369,6 +370,7 @@ module mp_thompson
          real(kind_phys),           intent(in   ) :: phii(1:ncol,1:nlev+1)
          real(kind_phys),           intent(in   ) :: omega(1:ncol,1:nlev)
          real(kind_phys),           intent(in   ) :: dtp
+         integer,                   intent(in   ) :: istep, nsteps
          ! Precip/rain/snow/graupel fall amounts and fraction of frozen precip
          real(kind_phys),           intent(  out) :: prcp(1:ncol)
          real(kind_phys),           intent(  out) :: rain(1:ncol)
@@ -393,6 +395,8 @@ module mp_thompson
 
          ! Local variables
 
+         ! Reduced time step if subcycling is used
+         real(kind_phys) :: dtstep
          ! Air density
          real(kind_phys) :: rho(1:ncol,1:nlev)              !< kg m-3
          ! Water vapor mixing ratio (instead of specific humidity)
@@ -439,6 +443,13 @@ module mp_thompson
             return
          end if
 
+         ! Set reduced time step if subcycling is used
+         if (nsteps>1) then
+            dtstep = dtp/real(nsteps, kind=kind_phys)
+         else
+            dtstep = dtp
+         end if
+
          if (is_aerosol_aware .and. .not. (present(nc)     .and. &
                                            present(nwfa)   .and. &
                                            present(nifa)   .and. &
@@ -456,6 +467,10 @@ module mp_thompson
          !> - Also, hydrometeor variables are mass or number mixing ratio
          !> - either kg of species per kg of dry air, or per kg of (dry + vapor).
 
+         ! DH* - do this only if istep == nsteps? Would be ok if it was
+         ! guaranteed that nothing else in the same subcycle construct
+         ! was using these arrays - which is currently the case for
+         ! mp_thompson_pre/post - but it is somewhat dangerous
          qv = spechum/(1.0_kind_phys-spechum)
 
          if (convert_dry_rho) then
@@ -473,6 +488,7 @@ module mp_thompson
               nifa = nifa/(1.0_kind_phys-spechum)
            end if
          end if
+         ! *DH
 
          !> - Density of air in kg m-3
          rho = con_eps*prsl/(con_rd*tgrs*(qv+con_eps))
@@ -549,7 +565,7 @@ module mp_thompson
          if (is_aerosol_aware) then
             call mp_gt_driver(qv=qv, qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, ni=ni, nr=nr,        &
                               nc=nc, nwfa=nwfa, nifa=nifa, nwfa2d=nwfa2d, nifa2d=nifa2d,     &
-                              tt=tgrs, p=prsl, w=w, dz=dz, dt_in=dtp,                        &
+                              tt=tgrs, p=prsl, w=w, dz=dz, dt_in=dtstep,                     &
                               rainnc=rain_mp, rainncv=delta_rain_mp,                         &
                               snownc=snow_mp, snowncv=delta_snow_mp,                         &
                               icenc=ice_mp, icencv=delta_ice_mp,                             &
@@ -565,11 +581,12 @@ module mp_thompson
                               ids=ids, ide=ide, jds=jds, jde=jde, kds=kds, kde=kde,          &
                               ims=ims, ime=ime, jms=jms, jme=jme, kms=kms, kme=kme,          &
                               its=its, ite=ite, jts=jts, jte=jte, kts=kts, kte=kte,          &
-                              errmsg=errmsg, errflg=errflg, reset=reset)
+                              reset=reset, istep=istep, nsteps=nsteps,                       &
+                              errmsg=errmsg, errflg=errflg)
 
          else
             call mp_gt_driver(qv=qv, qc=qc, qr=qr, qi=qi, qs=qs, qg=qg, ni=ni, nr=nr,        &
-                              tt=tgrs, p=prsl, w=w, dz=dz, dt_in=dtp,                        &
+                              tt=tgrs, p=prsl, w=w, dz=dz, dt_in=dtstep,                     &
                               rainnc=rain_mp, rainncv=delta_rain_mp,                         &
                               snownc=snow_mp, snowncv=delta_snow_mp,                         &
                               icenc=ice_mp, icencv=delta_ice_mp,                             &
@@ -585,9 +602,16 @@ module mp_thompson
                               ids=ids, ide=ide, jds=jds, jde=jde, kds=kds, kde=kde,          &
                               ims=ims, ime=ime, jms=jms, jme=jme, kms=kms, kme=kme,          &
                               its=its, ite=ite, jts=jts, jte=jte, kts=kts, kte=kte,          &
-                              errmsg=errmsg, errflg=errflg, reset=reset)
+                              reset=reset, istep=istep, nsteps=nsteps,                       &
+                              errmsg=errmsg, errflg=errflg)
+
          end if
          if (errflg/=0) return
+
+         ! DH* - do this only if istep == nsteps? Would be ok if it was
+         ! guaranteed that nothing else in the same subcycle construct
+         ! was using these arrays - which is currently the case for
+         ! mp_thompson_pre/post - but it is somewhat dangerous
 
          !> - Convert water vapor mixing ratio back to specific humidity
          spechum = qv/(1.0_kind_phys+qv)
@@ -607,6 +631,7 @@ module mp_thompson
               nifa = nifa/(1.0_kind_phys+qv)
            end if
          end if
+         ! *DH
 
          !> - Convert rainfall deltas from mm to m (on physics timestep); add to inout variables
          ! "rain" in Thompson MP refers to precipitation (total of liquid rainfall+snow+graupel+ice)
