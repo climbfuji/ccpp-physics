@@ -516,7 +516,7 @@
   standard_name = convective_transportable_tracers
   long_name = array to contain cloud water and other convective trans. tracers
   units = kg kg-1
-  dimensions = (horizontal_dimension,vertical_dimension,number_of_tracers_for_convective_transport)
+  dimensions = (horizontal_loop_extent,vertical_dimension,number_of_tracers_for_convective_transport)
   type = real
   kind = kind_phys
   intent = inout
@@ -534,7 +534,7 @@
   standard_name = instantaneous_deep_convective_wet_deposition
   long_name = instantaneous deep convective wet deposition
   units = kg m-2 s-1
-  dimensions = (horizontal_dimension,number_of_chemical_tracers)
+  dimensions = (horizontal_loop_extent,number_of_chemical_tracers)
   type = real
   kind = kind_phys
   intent = out
@@ -543,7 +543,7 @@
   standard_name = instantaneous_mid_convective_wet_deposition
   long_name = instantaneous mid convective wet deposition
   units = kg m-2 s-1
-  dimensions = (horizontal_dimension,number_of_chemical_tracers)
+  dimensions = (horizontal_loop_extent,number_of_chemical_tracers)
   type = real
   kind = kind_phys
   intent = out
@@ -552,7 +552,7 @@
   standard_name = instantaneous_shal_convective_wet_deposition
   long_name = instantaneous shallow convective wet deposition
   units = kg m-2 s-1
-  dimensions = (horizontal_dimension,number_of_chemical_tracers)
+  dimensions = (horizontal_loop_extent,number_of_chemical_tracers)
   type = real
   kind = kind_phys
   intent = out

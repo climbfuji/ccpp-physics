@@ -29,7 +29,7 @@ contains
          implicit none
          
          integer,                   intent(in) :: imfshalcnv, imfshalcnv_gf
-         integer,                   intent(in) :: imfdeepcnv, imfdeepcnv_gf       
+         integer,                   intent(in) :: imfdeepcnv, imfdeepcnv_gf
          integer,                   intent(in)    :: mpirank
          integer,                   intent(in)    :: mpiroot
          character(len=*),          intent(  out) :: errmsg
@@ -144,6 +144,9 @@ contains
    integer, intent(in   ) :: imfshalcnv
    integer, dimension(:),intent(inout) :: cactiv
 
+   character(len=*),          intent(  out) :: errmsg
+   integer,                   intent(  out) :: errflg
+
 !  local variables
    integer, dimension(im) :: k22_shallow,kbcon_shallow,ktop_shallow
    real(kind=kind_phys), dimension (im)    :: rand_mom,rand_vmas
@@ -205,7 +208,8 @@ contains
   !parameter (tf=263.16, tcr=273.16, tcrf=1.0/(tcr-tf))
   !parameter (tf=233.16, tcr=263.16, tcrf=1.0/(tcr-tf))
   parameter (tf=258.16, tcr=273.16, tcrf=1.0/(tcr-tf)) ! as fim, HCB tuning
-  ! initialize ccpp error handling variables
+
+! initialize ccpp error handling variables
      errmsg = ''
      errflg = 0
 !
