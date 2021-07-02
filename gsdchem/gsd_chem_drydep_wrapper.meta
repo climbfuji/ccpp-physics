@@ -193,8 +193,8 @@
   intent = inout
   optional = F
 [exch]
-  standard_name = instantaneous_atmosphere_heat_diffusivity
-  long_name = instantaneous atmospheric heat diffusivity
+  standard_name = atmosphere_heat_diffusivity
+  long_name = atmospheric heat diffusivity
   units = m2 s-1
   dimensions = (horizontal_loop_extent,vertical_dimension)
   type = real
