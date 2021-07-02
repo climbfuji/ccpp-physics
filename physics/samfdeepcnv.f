@@ -242,7 +242,7 @@ c  physical parameters
      &                     ctr(im,km,ntr), ctro(im,km,ntr)
 !  for aerosol transport
       real(kind=kind_phys) qaero(im,km,ntc)
-      real(kind=kind_phys), intent(inout), optional :: wetdpc_deep(:,:)
+      real(kind=kind_phys), intent(inout) :: wetdpc_deep(:,:)
       logical, intent(in) :: cplchm
 !  for updraft velocity calculation
       real(kind=kind_phys) wu2(im,km),     buo(im,km),    drag(im,km)
