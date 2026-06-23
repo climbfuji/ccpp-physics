@@ -16,7 +16,7 @@ module cires_ugwp
 
     use machine, only: kind_phys
 
-    use cires_ugwpv0_module, only: knob_ugwp_version, cires_ugwpv0_mod_init, cires_ugwpv0_mod_finalize
+    use cires_ugwpv0_module, only: knob_ugwp_version, cires_ugwpv0_mod_init, cires_ugwpv0_mod_final
     use ugwp_driver_v0
     use gwdps, only: gwdps_run
     use cires_ugwp_triggers
@@ -25,7 +25,7 @@ module cires_ugwp
 
     private
 
-    public cires_ugwp_init, cires_ugwp_run, cires_ugwp_finalize
+    public cires_ugwp_init, cires_ugwp_run, cires_ugwp_final
 
     logical :: is_initialized = .False.
 
@@ -59,7 +59,7 @@ contains
     real(kind=kind_phys), intent (in) :: con_p0
     integer,              intent(in)  :: gwd_opt
     logical,              intent (in) :: do_ugwp
-
+    
     character(len=*), intent (in) :: fn_nml2
     !character(len=*), parameter   :: fn_nml='input.nml'
 
@@ -103,16 +103,16 @@ contains
     end subroutine cires_ugwp_init
 
 ! -----------------------------------------------------------------------
-! finalize of cires_ugwp   (_finalize)
+! finalize of cires_ugwp   (_final)
 ! -----------------------------------------------------------------------
 
 !> The subroutine finalizes the CIRES UGWP
 #if 0
-!> \section arg_table_cires_ugwp_finalize Argument Table
-!! \htmlinclude cires_ugwp_finalize.html
+!> \section arg_table_cires_ugwp_final Argument Table
+!! \htmlinclude cires_ugwp_final.html
 !!
 #endif
-    subroutine cires_ugwp_finalize(errmsg, errflg)
+    subroutine cires_ugwp_final(errmsg, errflg)
 
     implicit none
 !
@@ -125,11 +125,11 @@ contains
 
     if (.not.is_initialized) return
 
-    call cires_ugwpv0_mod_finalize()
+    call cires_ugwpv0_mod_final()
 
     is_initialized = .false.
 
-    end subroutine cires_ugwp_finalize
+    end subroutine cires_ugwp_final
 
 ! -----------------------------------------------------------------------
 !    originally from ugwp_driver_v0.f
@@ -195,11 +195,11 @@ contains
          dusfc_ms, dvsfc_ms, dusfc_bl, dvsfc_bl,                                       &
          dudt_ogw, dtauy2d_ms, dtaux2d_bl, dtauy2d_bl,                                 &
          dudt_mtb, dudt_tms, du3dt_mtb, du3dt_ogw, du3dt_tms,                          &
-         dudt, dvdt, dtdt, rdxzb, con_g, con_pi, con_cp, con_rd, con_rv, con_fvirt,    &
+         rdxzb, con_g, con_pi, con_cp, con_rd, con_rv, con_fvirt,                      &
          con_omega, rain, ntke, q_tke, dqdt_tke, lprnt, ipr,                           &
          dtend, dtidx, index_of_x_wind, index_of_y_wind, index_of_temperature,         &
          index_of_process_orographic_gwd, index_of_process_nonorographic_gwd,          &
-         ldiag3d, lssav, flag_for_gwd_generic_tend, errmsg, errflg)
+         ldiag3d, lssav, flag_for_gwd_generic_tend, ten_q, errmsg, errflg)
 
     implicit none
 
@@ -239,18 +239,18 @@ contains
     ! These arrays only allocated if ldiag_ugwp = .true.
     real(kind=kind_phys),    intent(inout), dimension(:,:), optional :: du3dt_mtb, du3dt_ogw, du3dt_tms
 
-    real(kind=kind_phys),    intent(inout), dimension(:, :):: dudt, dvdt, dtdt
-
     real(kind=kind_phys),    intent(in) :: con_g, con_pi, con_cp, con_rd, con_rv, con_fvirt, con_omega
 
     real(kind=kind_phys),    intent(in), dimension(:) :: rain
 
     integer,                 intent(in) :: ntke
-    real(kind=kind_phys),    intent(in), dimension(:,:) :: q_tke, dqdt_tke
+    real(kind=kind_phys),    intent(in), dimension(:,:), optional :: q_tke, dqdt_tke
 
     logical, intent(in) :: lprnt
     integer, intent(in) :: ipr
-
+    
+    real(kind=kind_phys), intent(out) :: ten_q(:,:,:)
+    
     character(len=*),        intent(out) :: errmsg
     integer,                 intent(out) :: errflg
 
@@ -272,6 +272,8 @@ contains
     ! Initialize CCPP error handling variables
     errmsg = ''
     errflg = 0
+    
+    ten_q = 0.0
 
     ! 1) ORO stationary GWs
     !    ------------------
@@ -310,7 +312,7 @@ contains
        enddo
 
        if (cdmbgwd(1) > 0.0 .or. cdmbgwd(2) > 0.0) then
-         call gwdps_run(im, levs, Pdvdt, Pdudt, Pdtdt,                  &
+         call gwdps_run(im, levs, Pdvdt, Pdudt, Pdtdt, ten_q,           &
                     ugrs, vgrs, tgrs, qgrs(:,:,1),                      &
                     kpbl, prsi, del, prsl, prslk, phii, phil, dtp, kdt, &
                     hprime, oc, oa4, clx, theta, sigma, gamma,          &
@@ -396,10 +398,6 @@ contains
           gw_dudt(i,k) = pngw*gw_dudt(i,k) + pogw*Pdudt(i,k)
           gw_dvdt(i,k) = pngw*gw_dvdt(i,k) + pogw*Pdvdt(i,k)
           gw_kdis(i,k) = pngw*gw_kdis(i,k) + pogw*Pkdis(i,k)
-          ! accumulation of tendencies for CCPP to replicate EMC-physics updates (!! removed in latest code commit to VLAB)
-          !dudt(i,k) = dudt(i,k) + gw_dudt(i,k)
-          !dvdt(i,k) = dvdt(i,k) + gw_dvdt(i,k)
-          !dtdt(i,k) = dtdt(i,k) + gw_dtdt(i,k)
         enddo
       enddo
 

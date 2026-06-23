@@ -984,15 +984,15 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = pdftxt/HSD_overview.txt \
-                         pdftxt/Idealized_TC.txt \
-                         pdftxt/Aquaplanet.txt \
-                         pdftxt/HAFS_TC_suite.txt  \
-                         pdftxt/GFS_v17_p8_ugwpv1_aquaplanet_suite.txt \
+INPUT                  = pdftxt/HSD/HSD_overview.txt \
+                         pdftxt/HSD/Idealized_TC.txt \
+                         pdftxt/HSD/Aquaplanet.txt \
+                         pdftxt/HSD/HAFS_TC_suite.txt  \
+                         pdftxt/HSD/GFS_v17_p8_ugwpv1_aquaplanet_suite.txt \
                          pdftxt/suite_input.nml.txt \
                          pdftxt/acronyms.txt   \
                          pdftxt/GFS_RRTMG.txt \
-                         pdftxt/GFS_SFCLYR.txt \
+                         pdftxt/GFS_v17_SFCLYR.txt \
                          pdftxt/GFS_NSST.txt \
                          pdftxt/GFS_OCEAN.txt \
                          pdftxt/NOAH_LSM.txt \
