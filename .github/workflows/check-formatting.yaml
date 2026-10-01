@@ -5,8 +5,8 @@ on:
 
 jobs:
   format:
-    name: Codee Formatter Status Report
-    runs-on: self-hosted
+    name: Check Fortran formatting
+    runs-on: ubuntu
 
     steps:
       - name: Checkout repository
