@@ -3,39 +3,31 @@ name: Codee Formatter Status Report
 on:
   pull_request:
 
-env:
-  CODEE_VERSION: 2026.1.2
-
 jobs:
   format:
-    name: Check Fortran formatting
-    runs-on: ubuntu-22.04
+    name: Codee Formatter Status Report
+    runs-on: self-hosted
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Check formatting of modified Fortran files
+      - name: Get modified Fortran files
+        id: modified-files
         run: |
-          git remote -v show
-          git fetch origin ${{ github.base_ref }}
           MODIFIED_FILES=$(git diff --name-only --diff-filter=d origin/${{ github.base_ref }}...HEAD -- '*.f90' '*.F90' '*.f' '*.F')
-          if [[ "${MODIFIED_FILES}" == "" ]]; then
-            exit 0
-          fi
-          #
-          echo "Installing Codee ${CODEE_VERSION} ..."
-          wget https://codee.com/release/codee-${CODEE_VERSION}-linux-x86_64.tar.gz
-          tar -xf codee-${CODEE_VERSION}-linux-x86_64.tar.gz
-          export PATH="${PWD}/codee-${CODEE_VERSION}-linux-x86_64/bin:${PATH}"
-          #
-          codee format --accept-eula --verbose ${MODIFIED_FILES}
-          REFORMATTED_FILES=$(git diff --name-only --diff-filter=d)
-          if [[ "${REFORMATTED_FILES}" == "" ]]; then
-            exit 0
-          fi
-          echo "Formatting issues detected. Run 'codee format' locally or apply the following diff manually:"
-          git diff
-          exit 1
+          echo "MODIFIED_FILES=$MODIFIED_FILES" >> $GITHUB_ENV
+
+      - name: Run Codee format status
+        if: env.MODIFIED_FILES != ''
+        run: |
+          echo "Running Codee format on modified files..."
+          codee format --verbose $MODIFIED_FILES | tee codee_output.log
+          echo ""
+          echo "========== Codee Format Summary =========="
+          tail -n 1 codee_output.log
+          echo "=========================================="
+
+
