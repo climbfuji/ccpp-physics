@@ -1,9 +1,9 @@
 !> \file physcons.F90
 !! This file contains module physcons
 
-!  ==========================================================  !!!!!
-!                 module  'physcons' description               !!!!!
-!  ==========================================================  !!!!!
+!!!!!  ==========================================================  !!!!!
+!!!!!                 module  'physcons' description               !!!!!
+!!!!!  ==========================================================  !!!!!
 !                                                                      !
 !   this module contains some the most frequently used math and        !
 !   physics constatns for gcm models.                                  !
