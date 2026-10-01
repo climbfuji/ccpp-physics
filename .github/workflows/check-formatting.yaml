@@ -9,7 +9,7 @@ env:
 jobs:
   format:
     name: Check Fortran formatting
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu
 
     steps:
       - name: Checkout repository
