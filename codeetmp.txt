@@ -1,0 +1,42 @@
+
+$ cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON <your options here> ..
+
+$ codee checks -p compile_commands.json --db codee.db
+
+[...]
+
+SUGGESTIONS
+
+  Use --check-id and --verbose to focus on specific subsets of checkers, e.g.:
+        codee checks --check-id PWR072 --verbose -p compile_commands.json --db codee.db
+
+0 file analyses reused from cache, 329 files analyzed from scratch
+329 target files (150 with missing deps), 1286 functions, 4187 loops, 165085 SLOCs
+successfully analyzed (7436 checkers) and 0 non-analyzed files in 6 m 21 s
+
+
+$ codee checks --check-id PWR072 --verbose -p compile_commands.json --db codee.db
+
+[...]
+
+QUALITY CHECKS REPORT
+
+/path/to/physics/tools/funcphys.f90:2819:21 [PWR072] (level: L1): Explicitly declare
+the 'save' attribute or split the variable initialization to prevent unintended behavior
+
+  Suggestion: Split the initialization of the variable 'cnpk' from its declaration to
+  prevent storing the value across different invocations of the procedure; otherwise,
+  in case this behavior is intended, add the 'save' attribute to the variable to make
+  the intent explicit
+
+  Documentation:
+    https://open-catalog.codee.com/Checks/PWR072
+  AutoFix (choose one option):
+    * Split initialization from the declaration:
+        codee rewrite --check-id pwr072 --variant split --in-place 
+          /path/to/physics/tools/funcphys.f90:2819:21 -p compile_commands.json --db codee.db
+    * Add the explicit 'save' attribute:
+        codee rewrite --check-id pwr072 --variant explicit-save --in-place
+          /path/to/physics/tools/funcphys.f90:2819:21 -p compile_commands.json --db codee.db
+
+
